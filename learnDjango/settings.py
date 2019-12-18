@@ -87,7 +87,7 @@ DATABASES = {
     #     'NAME': 'testfcc',
     #     'USER': 'root',
     #     'PASSWORD': 'Fancc2020@',
-    #     'HOST': '47.93.232.7',
+    #     'HOST': '47.93.232.76',
     #     'PORT': 3306
     # }
 }
