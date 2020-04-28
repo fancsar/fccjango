@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views import View
 
 
@@ -17,11 +17,16 @@ class IndexView(View):
     4. 
     '''
 
-    def get(self, request):
-        return HttpResponse('<h1>Get  Success</h1>')
+    def get(self, request, pk):
+        return HttpResponse(f'<h1>Get  Success{pk}</h1>')
 
-    def post(self, request):
-        return HttpResponse('<h1>Post  Success</h1>')
+    def post(self, request,pk):
+        aa = [
+            {'aa': 1, 'bb': 2},
+            {'cc': 3, 'dd': 4}
+        ]
+        # return HttpResponse('<h1>Post  Success</h1>')
+        return JsonResponse(aa, safe=False)
 
     def put(self, request):
         return HttpResponse('<h1>put Success</h1>')

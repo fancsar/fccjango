@@ -9,5 +9,5 @@ from .views import IndexView
 
 urlpatterns = [
     path('index/', haha),
-    path('index1/', IndexView.as_view())
+    path('index1/<int:pk>/', IndexView.as_view())
 ]
