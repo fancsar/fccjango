@@ -1,11 +1,11 @@
 from django.db import models
-from login.models import Projects
+from projects.models import Projects
 
 
 # Create your models here.
 
 
-class Interfances(models.Model):
+class Interfaces(models.Model):
     '''
     接口模型类
     一个项目中有多个接口
@@ -25,11 +25,11 @@ class Interfances(models.Model):
     # on_delete = models.CASCADE 为父表删除之后，子表也会删除
     # related_name 指定父表对子表引用名，如不指定，默认为子表模型类名小写_set 即 interfances_set
     # project = models.ForeignKey(to='Projects')
-    project = models.ForeignKey(to='login.Projects', on_delete=models.CASCADE, related_name='interfances',
+    project = models.ForeignKey(to='projects.Projects', on_delete=models.CASCADE, related_name='interfaces',
                                 help_text='所属项目')
 
     class Meta:
-        db_table = 'tb_interfances'
+        db_table = 'tb_interfaces'
         verbose_name = '接口'
 
     def __str__(self):
