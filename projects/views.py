@@ -1,5 +1,6 @@
 from django.http import HttpResponse, JsonResponse
 from django.views import View
+from .models import Projects
 
 
 def haha(request):
@@ -18,9 +19,11 @@ class IndexView(View):
     '''
 
     def get(self, request, pk):
-        return HttpResponse(f'<h1>Get  Success{pk}</h1>')
+        Projects.objects.create(name='4.28国产机型2', leader='东方', tester='xx院士', programmer='鹏翔', publish_app='华为',
+                                desc='项目简介')
+        return HttpResponse(f'<h1>Get  Success{pk}</h1>,新增成功')
 
-    def post(self, request,pk):
+    def post(self, request, pk):
         aa = [
             {'aa': 1, 'bb': 2},
             {'cc': 3, 'dd': 4}
