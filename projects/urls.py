@@ -5,9 +5,9 @@
 # @File   :urls.py
 from django.urls import path
 from .views import haha
-from .views import IndexView
+from .views import IndexView, ProjectList
 
 urlpatterns = [
-    path('index/', haha),
-    path('index1/<int:pk>/', IndexView.as_view())
+    path('projects/', ProjectList.as_view()),
+    path('project/<int:pk>/', IndexView.as_view())
 ]

@@ -1,6 +1,8 @@
+import json
 from django.http import HttpResponse, JsonResponse, Http404
 from django.views import View
 from .models import Projects
+from .models import ProjectsSerializer
 
 
 def haha(request):
@@ -8,6 +10,22 @@ def haha(request):
 
 
 # 使用类视图
+class ProjectList(View):
+    def get(self, request):
+        projects = Projects.objects.all()
+        project_list = ProjectsSerializer(instance=projects, many=True)
+        return JsonResponse(data=project_list.data, safe=False)
+
+    def post(self, request):
+        json_data = request.body
+        data = json.loads(json_data, encoding='utf-8')
+        serializer = ProjectsSerializer(data=data)
+        if not serializer.is_valid():
+            return JsonResponse(data=serializer.errors, status=400)
+        project = Projects.objects.create(**serializer.validated_data)
+        serializer = ProjectsSerializer(instance=project)
+        return JsonResponse(serializer.data, status=201)
+
 
 class IndexView(View):
     '''
@@ -26,18 +44,8 @@ class IndexView(View):
 
     def get(self, request, pk):
         project = self.get_object(pk)
-        if isinstance(project, JsonResponse):
-            return project
-        new_dict = {
-            'id': project.id,
-            'name': project.name,
-            'leader': project.leader,
-            'tester': project.tester,
-            'programer': project.programmer,
-            'publish_app': project.publish_app,
-            'desc': project.desc
-        }
-        return JsonResponse(new_dict)
+        serializer = ProjectsSerializer(instance=project)
+        return JsonResponse(serializer.data, status=201)
 
     def post(self, request, pk):
         aa = [
