@@ -1,4 +1,4 @@
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, Http404
 from django.views import View
 from .models import Projects
 
@@ -18,10 +18,26 @@ class IndexView(View):
     4. 
     '''
 
+    def get_object(self, pk):
+        try:
+            return Projects.objects.get(pk=pk)
+        except Projects.DoesNotExist:
+            raise Http404
+
     def get(self, request, pk):
-        Projects.objects.create(name='4.28国产机型2', leader='东方', tester='xx院士', programmer='鹏翔', publish_app='华为',
-                                desc='项目简介')
-        return HttpResponse(f'<h1>Get  Success{pk}</h1>,新增成功')
+        project = self.get_object(pk)
+        if isinstance(project, JsonResponse):
+            return project
+        new_dict = {
+            'id': project.id,
+            'name': project.name,
+            'leader': project.leader,
+            'tester': project.tester,
+            'programer': project.programmer,
+            'publish_app': project.publish_app,
+            'desc': project.desc
+        }
+        return JsonResponse(new_dict)
 
     def post(self, request, pk):
         aa = [
