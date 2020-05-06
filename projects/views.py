@@ -2,7 +2,7 @@ import json
 from django.http import HttpResponse, JsonResponse, Http404
 from django.views import View
 from .models import Projects
-from .models import ProjectsModelSerializer
+from .serializers import ProjectsModelSerializer
 
 
 def haha(request):
@@ -45,16 +45,23 @@ class IndexView(View):
 
     def get(self, request, pk):
         project = self.get_object(pk)
-        serializer = ProjectsSerializer(instance=project)
+        serializer = ProjectsModelSerializer(instance=project)
         return JsonResponse(serializer.data, status=201)
 
     def post(self, request, pk):
-        aa = [
-            {'aa': 1, 'bb': 2},
-            {'cc': 3, 'dd': 4}
-        ]
-        # return HttpResponse('<h1>Post  Success</h1>')
-        return JsonResponse(aa, safe=False)
+        json_data = request.body
+        data = json.loads(json_data, encoding='utf-8')
+        project = self.get_object(pk)
+        serializer = ProjectsModelSerializer(data=data, instance=project)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except:
+            return JsonResponse(serializer.errors, status=400)
+        serializer.save()
+        return JsonResponse(serializer.data, status=201)
 
-    def put(self, request):
-        return HttpResponse('<h1>put Success</h1>')
+    def delete(self, request, pk):
+        project = self.get_object(pk)
+        project.delete()
+        return JsonResponse(None, safe=True, status=204)
+
