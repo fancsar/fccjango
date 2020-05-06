@@ -9,5 +9,5 @@ from .views import IndexView, ProjectList
 
 urlpatterns = [
     path('projects/', ProjectList.as_view()),
-    path('project/<int:pk>/', IndexView.as_view())
+    path('projects/<int:pk>/', IndexView.as_view())
 ]

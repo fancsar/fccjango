@@ -2,7 +2,7 @@ import json
 from django.http import HttpResponse, JsonResponse, Http404
 from django.views import View
 from .models import Projects
-from .models import ProjectsSerializer
+from .models import ProjectsModelSerializer
 
 
 def haha(request):
@@ -13,17 +13,18 @@ def haha(request):
 class ProjectList(View):
     def get(self, request):
         projects = Projects.objects.all()
-        project_list = ProjectsSerializer(instance=projects, many=True)
+        project_list = ProjectsModelSerializer(instance=projects, many=True)
         return JsonResponse(data=project_list.data, safe=False)
 
     def post(self, request):
         json_data = request.body
         data = json.loads(json_data, encoding='utf-8')
-        serializer = ProjectsSerializer(data=data)
-        if not serializer.is_valid():
+        serializer = ProjectsModelSerializer(data=data)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except:
             return JsonResponse(data=serializer.errors, status=400)
-        project = Projects.objects.create(**serializer.validated_data)
-        serializer = ProjectsSerializer(instance=project)
+        serializer.save()
         return JsonResponse(serializer.data, status=201)
 
 
