@@ -55,7 +55,7 @@ class ProjectsSerializer(serializers.Serializer):
 class ProjectsModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Projects
-        exclude = ('create_time', 'update_time', 'id')
+        exclude = ('create_time', 'update_time')
         extra_kwargs = {
             'name': {
                 'validators': [is_unique_project_name],

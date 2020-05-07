@@ -63,5 +63,5 @@ class IndexView(View):
     def delete(self, request, pk):
         project = self.get_object(pk)
         project.delete()
-        return JsonResponse(None, safe=True, status=204)
+        return JsonResponse(None, safe=False, status=204)
 

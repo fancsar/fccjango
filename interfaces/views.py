@@ -54,4 +54,4 @@ class InterfacesDetail(View):
     def delete(self, request, pk):
         interface = self.get_object(pk)
         interface.delete()
-        return JsonResponse(None, status=204, safe=True)
+        return JsonResponse(None, status=204, safe=False)
