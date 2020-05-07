@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import Projects
-
+from interfaces.models import Interfaces
 
 
 def is_unique_project_name(value):
@@ -52,10 +52,21 @@ class ProjectsSerializer(serializers.Serializer):
         return instance
 
 
+# -----------------interfaces项目--------------
+class InterfacesMSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Interfaces
+        fields = '__all__'
+
+
 class ProjectsModelSerializer(serializers.ModelSerializer):
+    # interfaces = serializers.StringRelatedField(many=True)
+    interfaces = InterfacesMSerializer(many=True, read_only=True)
+
     class Meta:
         model = Projects
-        exclude = ('create_time', 'update_time')
+        # exclude = ('create_time', 'update_time')
+        fields = ('id', 'name', 'leader', 'tester', 'programmer', 'publish_app', 'desc', 'interfaces')
         extra_kwargs = {
             'name': {
                 'validators': [is_unique_project_name],
