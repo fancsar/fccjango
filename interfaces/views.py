@@ -5,29 +5,30 @@ from django.shortcuts import render
 
 # Create your views here.
 from django.views import View
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from .models import Interfaces
 from .serializers import InterfacesModelSerializer
 
 
-class InterfanceList(View):
+class InterfanceList(APIView):
     def get(self, request):
         interfaces = Interfaces.objects.all()
         serializer = InterfacesModelSerializer(instance=interfaces, many=True)
-        return JsonResponse(serializer.data, safe=False, status=201)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def post(self, request):
-        json_data = request.body
-        data = json.loads(json_data)
-        serializer = InterfacesModelSerializer(data=data)
+        serializer = InterfacesModelSerializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
         except:
-            JsonResponse(Http404, status=400)
+            Response(Http404, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
-        return JsonResponse(serializer.data, status=201)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class InterfacesDetail(View):
+class InterfacesDetail(APIView):
     def get_object(self, pk):
         try:
             return Interfaces.objects.get(pk=pk)
@@ -37,21 +38,19 @@ class InterfacesDetail(View):
     def get(self, request, pk):
         interface = self.get_object(pk)
         serializer = InterfacesModelSerializer(instance=interface)
-        return JsonResponse(serializer.data, status=201)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def post(self, request, pk):
-        json_data = request.body
-        data = json.loads(json_data, encoding='utf-8')
         interface = self.get_object(pk)
-        serializer = InterfacesModelSerializer(data=data, instance=interface)
+        serializer = InterfacesModelSerializer(data=request.data, instance=interface)
         try:
             serializer.is_valid(raise_exception=True)
         except:
-            JsonResponse(Http404, status=400)
+            Response(Http404, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
-        return JsonResponse(serializer.data, status=201)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, pk):
         interface = self.get_object(pk)
         interface.delete()
-        return JsonResponse(None, status=204, safe=False)
+        return Response(None, status=status.HTTP_204_NO_CONTENT)

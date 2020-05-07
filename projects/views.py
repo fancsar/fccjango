@@ -1,6 +1,9 @@
 import json
 from django.http import HttpResponse, JsonResponse, Http404
 from django.views import View
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from .models import Projects
 from .serializers import ProjectsModelSerializer
 
@@ -10,25 +13,23 @@ def haha(request):
 
 
 # 使用类视图
-class ProjectList(View):
+class ProjectList(APIView):
     def get(self, request):
         projects = Projects.objects.all()
         project_list = ProjectsModelSerializer(instance=projects, many=True)
-        return JsonResponse(data=project_list.data, safe=False)
+        return Response(data=project_list.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        json_data = request.body
-        data = json.loads(json_data, encoding='utf-8')
-        serializer = ProjectsModelSerializer(data=data)
+        serializer = ProjectsModelSerializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
         except:
-            return JsonResponse(data=serializer.errors, status=400)
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
-        return JsonResponse(serializer.data, status=201)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class IndexView(View):
+class IndexView(APIView):
     '''
     index: 主页类视图
     1.类视图需要继承View或者View子类
@@ -46,22 +47,19 @@ class IndexView(View):
     def get(self, request, pk):
         project = self.get_object(pk)
         serializer = ProjectsModelSerializer(instance=project)
-        return JsonResponse(serializer.data, status=201)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def post(self, request, pk):
-        json_data = request.body
-        data = json.loads(json_data, encoding='utf-8')
+    def put(self, request, pk):
         project = self.get_object(pk)
-        serializer = ProjectsModelSerializer(data=data, instance=project)
+        serializer = ProjectsModelSerializer(data=request.data, instance=project)
         try:
             serializer.is_valid(raise_exception=True)
         except:
-            return JsonResponse(serializer.errors, status=400)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
-        return JsonResponse(serializer.data, status=201)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, pk):
         project = self.get_object(pk)
         project.delete()
-        return JsonResponse(None, safe=False, status=204)
-
+        return Response(None, status=status.HTTP_204_NO_CONTENT)
