@@ -1,7 +1,10 @@
 import json
 from django.http import HttpResponse, JsonResponse, Http404
 from django.views import View
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter
 from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Projects
@@ -13,14 +16,28 @@ def haha(request):
 
 
 # 使用类视图
-class ProjectList(APIView):
+class ProjectList(GenericAPIView):
+    queryset = Projects.objects.all()
+    serializer_class = ProjectsModelSerializer
+    # 指定过滤引擎，排序引擎
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    # 指定分页引擎
+    # pagination_class =
+    # 指定的过滤字段
+    filterset_fields = ['name', 'leader', 'tester']
+    # 指定排序字段，默认为升序排列
+    ordering_fields = ['id']
+
+
     def get(self, request):
-        projects = Projects.objects.all()
-        project_list = ProjectsModelSerializer(instance=projects, many=True)
+        projects = self.get_queryset()
+        # 使用过滤后的查询级
+        projects = self.filter_queryset(projects)
+        project_list = self.get_serializer(instance=projects, many=True)
         return Response(data=project_list.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        serializer = ProjectsModelSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
         except:
@@ -29,7 +46,7 @@ class ProjectList(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class IndexView(APIView):
+class IndexView(GenericAPIView):
     '''
     index: 主页类视图
     1.类视图需要继承View或者View子类
@@ -37,21 +54,23 @@ class IndexView(APIView):
     3.方法的第一个参数为，该视图对象本身，第二个为HttpRequest请求对象
     4. 
     '''
+    queryset = Projects.objects.all()
+    serializer_class = ProjectsModelSerializer
 
-    def get_object(self, pk):
-        try:
-            return Projects.objects.get(pk=pk)
-        except Projects.DoesNotExist:
-            raise Http404
+    # def get_object(self, pk):
+    #     try:
+    #         return Projects.objects.get(pk=pk)
+    #     except Projects.DoesNotExist:
+    #         raise Http404
 
-    def get(self, request, pk):
-        project = self.get_object(pk)
-        serializer = ProjectsModelSerializer(instance=project)
+    def get(self, request):
+        project = self.get_object()
+        serializer = self.get_serializer(instance=project)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def put(self, request, pk):
-        project = self.get_object(pk)
-        serializer = ProjectsModelSerializer(data=request.data, instance=project)
+    def put(self, request):
+        project = self.get_object()
+        serializer = self.get_serializer(data=request.data, instance=project)
         try:
             serializer.is_valid(raise_exception=True)
         except:
@@ -59,7 +78,7 @@ class IndexView(APIView):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete(self, request, pk):
-        project = self.get_object(pk)
+    def delete(self, request):
+        project = self.get_object()
         project.delete()
         return Response(None, status=status.HTTP_204_NO_CONTENT)
