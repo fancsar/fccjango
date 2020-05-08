@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_filters',
     'projects.apps.ProjectsConfig',
     'interfaces.apps.InterfacesConfig'
 ]
@@ -134,9 +135,12 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
-    'DEFAUTE_FILTER_BACKENDS': [
-        'django_filters.rest_framework.backends.DjangoFilterBackend'
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.backends.DjangoFilterBackend',
+        'rest_framework.filters.OrderingFilter',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE':3,
+    'DEFAULT_PAGINATION_CLASS':
+        # 'rest_framework.pagination.PageNumberPagination',
+        'utils.pagination.ManualPageNumberPagination',  # 使用自己重定义的分页类
+    'PAGE_SIZE': 3,
 }

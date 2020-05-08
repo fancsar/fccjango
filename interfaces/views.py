@@ -6,20 +6,30 @@ from django.shortcuts import render
 # Create your views here.
 from django.views import View
 from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Interfaces
 from .serializers import InterfacesModelSerializer
 
 
-class InterfanceList(APIView):
+class InterfanceList(GenericAPIView):
+    queryset = Interfaces.objects.all()
+    serializer_class = InterfacesModelSerializer
+    filterset_fields = ['name', 'tester']
+    ordering_fields = ['id', 'name']
+
     def get(self, request):
-        interfaces = Interfaces.objects.all()
-        serializer = InterfacesModelSerializer(instance=interfaces, many=True)
+        interfaces = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(interfaces)
+        if page is not None:
+            interface_page_list = self.get_serializer(instance=page, many=True)
+            return self.get_paginated_response(interface_page_list.data)
+        serializer = self.get_serializer(instance=interfaces, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def post(self, request):
-        serializer = InterfacesModelSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
         except:
@@ -28,21 +38,18 @@ class InterfanceList(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class InterfacesDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return Interfaces.objects.get(pk=pk)
-        except Interfaces.DoesNotExist:
-            return Http404
+class InterfacesDetail(GenericAPIView):
+    queryset = Interfaces.objects.all()
+    serializer_class = InterfacesModelSerializer
 
     def get(self, request, pk):
-        interface = self.get_object(pk)
-        serializer = InterfacesModelSerializer(instance=interface)
+        interface = self.get_object()
+        serializer = self.get_serializer(instance=interface)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def post(self, request, pk):
-        interface = self.get_object(pk)
-        serializer = InterfacesModelSerializer(data=request.data, instance=interface)
+        interface = self.get_object()
+        serializer = self.get_serializer(data=request.data, instance=interface)
         try:
             serializer.is_valid(raise_exception=True)
         except:
@@ -51,6 +58,6 @@ class InterfacesDetail(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, pk):
-        interface = self.get_object(pk)
+        interface = self.get_object()
         interface.delete()
         return Response(None, status=status.HTTP_204_NO_CONTENT)

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import json
 from django.http import HttpResponse, JsonResponse, Http404
 from django.views import View
@@ -20,21 +22,24 @@ class ProjectList(GenericAPIView):
     queryset = Projects.objects.all()
     serializer_class = ProjectsModelSerializer
     # 指定过滤引擎，排序引擎
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
-    # 指定分页引擎
-    # pagination_class =
-    # 指定的过滤字段
-    filterset_fields = ['name', 'leader', 'tester']
-    # 指定排序字段，默认为升序排列
-    ordering_fields = ['id']
-
+    # filter_backends = [DjangoFilterBackend, OrderingFilter]
+    # # 指定分页引擎
+    # # pagination_class =
+    # # 指定的过滤字段
+    filterset_fields = ['id', 'name', 'leader', 'tester']
+    # # 指定排序字段，默认为升序排列
+    ordering_fields = ['id', 'name']
 
     def get(self, request):
         projects = self.get_queryset()
         # 使用过滤后的查询级
         projects = self.filter_queryset(projects)
+        page = self.paginate_queryset(projects)
+        if page is not None:
+            project_page_list = self.get_serializer(instance=page, many=True)
+            return self.get_paginated_response(project_page_list.data)
         project_list = self.get_serializer(instance=projects, many=True)
-        return Response(data=project_list.data, status=status.HTTP_200_OK)
+        return Response(project_list.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -57,18 +62,12 @@ class IndexView(GenericAPIView):
     queryset = Projects.objects.all()
     serializer_class = ProjectsModelSerializer
 
-    # def get_object(self, pk):
-    #     try:
-    #         return Projects.objects.get(pk=pk)
-    #     except Projects.DoesNotExist:
-    #         raise Http404
-
-    def get(self, request):
+    def get(self, request, pk):
         project = self.get_object()
         serializer = self.get_serializer(instance=project)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def put(self, request):
+    def put(self, request, pk):
         project = self.get_object()
         serializer = self.get_serializer(data=request.data, instance=project)
         try:
@@ -78,7 +77,7 @@ class IndexView(GenericAPIView):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete(self, request):
+    def delete(self, request, pk):
         project = self.get_object()
         project.delete()
         return Response(None, status=status.HTTP_204_NO_CONTENT)
