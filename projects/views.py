@@ -20,9 +20,7 @@ def haha(request):
 
 
 # 使用类视图
-class ProjectList(mixins.ListModelMixin,
-                  mixins.CreateModelMixin,
-                  GenericAPIView):
+class ProjectList(generics.ListCreateAPIView):
     queryset = Projects.objects.all()
     serializer_class = ProjectsModelSerializer
     # 指定过滤引擎，排序引擎
@@ -34,17 +32,8 @@ class ProjectList(mixins.ListModelMixin,
     # # 指定排序字段，默认为升序排列
     ordering_fields = ['id', 'name']
 
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
-
-
-class IndexView(mixins.RetrieveModelMixin,
-                mixins.UpdateModelMixin,
-                mixins.DestroyModelMixin,
-                GenericAPIView):
+class IndexView(generics.RetrieveUpdateDestroyAPIView):
     '''
     index: 主页类视图
     1.类视图需要继承View或者View子类
@@ -54,12 +43,3 @@ class IndexView(mixins.RetrieveModelMixin,
     '''
     queryset = Projects.objects.all()
     serializer_class = ProjectsModelSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
-
-    def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)
