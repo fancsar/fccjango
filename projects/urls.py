@@ -5,9 +5,22 @@
 # @File   :urls.py
 from django.urls import path
 from .views import haha
-from .views import IndexView, ProjectList
+from .views import ProjectList
 
 urlpatterns = [
-    path('projects/', ProjectList.as_view()),
-    path('projects/<int:pk>/', IndexView.as_view())
+    path('projects/', ProjectList.as_view({
+        "get": "list",
+        "post": "create"
+    })),
+    path('projects/names/', ProjectList.as_view({
+        "get": "names"
+    })),
+    path('projects/names/<int:pk>/', ProjectList.as_view({
+        "get": "interface"
+    })),
+    path('projects/<int:pk>/', ProjectList.as_view({
+        "get": "retrieve",
+        "post": "update",
+        "delete": "destroy"
+    }))
 ]

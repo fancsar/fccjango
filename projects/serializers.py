@@ -95,3 +95,19 @@ class ProjectsModelSerializer(serializers.ModelSerializer):
         if '项目' not in name and 'fancc' not in leader:
             raise serializers.ValidationError(f'{name}中不包含"项目"，并且{leader}中要包含fancc')
         return attrs
+
+
+class ProjectsNameModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Projects
+        # exclude = ('create_time', 'update_time')
+        fields = ('id', 'name')
+
+
+class ProjectsInsModelSerializer(serializers.ModelSerializer):
+    interfaces = InterfacesMSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Projects
+        # exclude = ('create_time', 'update_time')
+        fields = ('interfaces',)
