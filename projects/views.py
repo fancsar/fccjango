@@ -33,6 +33,10 @@ class ProjectList(viewsets.ModelViewSet):
     @action(detail=False)
     def names(self, request, *args, **kwargs):
         project = self.get_queryset()
+        page = self.paginate_queryset(project)
+        if page is not None:
+            serializer = self.get_serializer(instance=page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(instance=project, many=True)
         return Response(serializer.data)
 

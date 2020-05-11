@@ -143,4 +143,6 @@ REST_FRAMEWORK = {
         # 'rest_framework.pagination.PageNumberPagination',
         'utils.pagination.ManualPageNumberPagination',  # 使用自己重定义的分页类
     'PAGE_SIZE': 3,
+    'DEFAULT_SCHEMA_CLASS':'rest_framework.schemas.coreapi.AutoSchema',
+
 }
