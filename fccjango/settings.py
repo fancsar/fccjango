@@ -9,12 +9,13 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-
+import datetime
 import os
+import sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+sys.path.append(os.path.join(BASE_DIR, 'apps'))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -38,7 +39,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'projects.apps.ProjectsConfig',
-    'interfaces.apps.InterfacesConfig'
+    'interfaces.apps.InterfacesConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -140,9 +142,71 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
     ],
     'DEFAULT_PAGINATION_CLASS':
-        # 'rest_framework.pagination.PageNumberPagination',
+    # 'rest_framework.pagination.PageNumberPagination',
         'utils.pagination.ManualPageNumberPagination',  # 使用自己重定义的分页类
     'PAGE_SIZE': 3,
-    'DEFAULT_SCHEMA_CLASS':'rest_framework.schemas.coreapi.AutoSchema',
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 指定使用JWT token
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication'
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
 
+}
+
+JWT_AUTH = {
+    # 修改token认证时效，默认5min
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
+    # 修改请求时，默认JWT 传参，java中为bearer,可修改
+    'JWT_AUTH_HEADER_PREFIX': 'JWT',
+    'JWT_RESPONSE_PAYLOAD_HANDLER':
+        # 'rest_framework_jwt.utils.jwt_response_payload_handler',
+        'utils.jwt_handler.jwt_response_payload_handler',
+}
+
+# 日志配置
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s - [%(levelname)s] - %(name)s - [msg]%(message)s - [%(filename)s:%(lineno)d ]'
+        },
+        'simple': {
+            'format': '%(asctime)s - [%(levelname)s] - [msg]%(message)s'
+        },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, "logs", "test.log"),  # 日志文件的位置
+            'maxBytes': 100 * 1024 * 1024,  # 日志文件的最大存储数
+            'backupCount': 10,
+            'formatter': 'verbose',
+            'encoding': 'utf-8',  # 防止输出时乱码
+        },
+    },
+    'loggers': {
+        'test': {  # 定义了一个名为test的日志器
+            'handlers': ['console', 'file'],
+            'propagate': True,
+            'level': 'DEBUG',  # 日志器接收的最低日志级别
+        },
+    }
 }

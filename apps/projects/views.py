@@ -24,6 +24,16 @@ def haha(request):
 
 # 使用类视图
 class ProjectList(viewsets.ModelViewSet):
+    """
+    create: 新增项目
+    list: 查询项目所有信息
+    retrieve: 获取某一个项目信息
+    update: 更改某个项目信息(全部更新)
+    partial_update: 更改某个项目信息(部分更新)
+    destroy: 删除某个项目
+    names: 获取所有的项目名称
+    interface: 获取某个项目的所有接口信息
+    """
     queryset = Projects.objects.all()
     serializer_class = serializers.ProjectsModelSerializer
     filterset_fields = ['id', 'name', 'leader', 'tester']
