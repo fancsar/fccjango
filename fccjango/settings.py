@@ -134,6 +134,7 @@ STATIC_URL = '/static/'
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
+        # 指定可视化API浏览
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
@@ -145,6 +146,7 @@ REST_FRAMEWORK = {
     # 'rest_framework.pagination.PageNumberPagination',
         'utils.pagination.ManualPageNumberPagination',  # 使用自己重定义的分页类
     'PAGE_SIZE': 3,
+    # 用careapi生成接口文档
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         # 指定使用JWT token
@@ -164,6 +166,7 @@ JWT_AUTH = {
     # 修改请求时，默认JWT 传参，java中为bearer,可修改
     'JWT_AUTH_HEADER_PREFIX': 'JWT',
     'JWT_RESPONSE_PAYLOAD_HANDLER':
+        # users模块login接口返回只有token,自定义带有id和username
         # 'rest_framework_jwt.utils.jwt_response_payload_handler',
         'utils.jwt_handler.jwt_response_payload_handler',
 }
