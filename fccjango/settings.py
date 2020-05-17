@@ -38,14 +38,23 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
+    'corsheaders',
     'projects.apps.ProjectsConfig',
     'interfaces.apps.InterfacesConfig',
     'users.apps.UsersConfig',
+    'testcases.apps.TestcasesConfig',
+    'testsuits.apps.TestsuitsConfig',
+    'envs.apps.EnvsConfig',
+    'reports.apps.ReportsConfig',
+    'debugtalks.apps.DebugtalksConfig',
+    'configures.apps.ConfiguresConfig',
 ]
-
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -147,7 +156,8 @@ REST_FRAMEWORK = {
         'utils.pagination.ManualPageNumberPagination',  # 使用自己重定义的分页类
     'PAGE_SIZE': 3,
     # 用careapi生成接口文档
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    # 'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    'DEFAULT_SCHEMA_CLASS': 'utils.get_SchemaGenerator.MinAutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         # 指定使用JWT token
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
@@ -155,7 +165,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication'
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        # 'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ],
 
 }
@@ -166,8 +177,8 @@ JWT_AUTH = {
     # 修改请求时，默认JWT 传参，java中为bearer,可修改
     'JWT_AUTH_HEADER_PREFIX': 'JWT',
     'JWT_RESPONSE_PAYLOAD_HANDLER':
-        # users模块login接口返回只有token,自定义带有id和username
-        # 'rest_framework_jwt.utils.jwt_response_payload_handler',
+    # users模块login接口返回只有token,自定义带有id和username
+    # 'rest_framework_jwt.utils.jwt_response_payload_handler',
         'utils.jwt_handler.jwt_response_payload_handler',
 }
 

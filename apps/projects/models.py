@@ -18,6 +18,8 @@ class Projects(models.Model):
 
     class Meta:
         db_table = 'tb_projects'
+        verbose_name = '项目信息'
+        verbose_name_plural = verbose_name
 
     def __str__(self):
         return self.name

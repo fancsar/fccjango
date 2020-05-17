@@ -9,7 +9,7 @@ from .views import ProjectList
 from rest_framework import routers
 
 router = routers.SimpleRouter()
-router.register(r'project', ProjectList)
+router.register(r'projects', ProjectList)
 urlpatterns = []
 urlpatterns += router.urls
 # urlpatterns = [

@@ -31,7 +31,7 @@ class Interfaces(models.Model):
     class Meta:
         db_table = 'tb_interfaces'
         verbose_name = '接口'
+        verbose_name_plural = verbose_name
 
     def __str__(self):
         return self.name
-    
