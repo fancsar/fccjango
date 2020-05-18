@@ -56,17 +56,18 @@ class ProjectsSerializer(serializers.Serializer):
 class InterfacesMSerializer(serializers.ModelSerializer):
     class Meta:
         model = Interfaces
-        fields = '__all__'
+        # fields = '__all__'
+        exclude = ('update_time',)
 
 
 class ProjectsModelSerializer(serializers.ModelSerializer):
     # interfaces = serializers.StringRelatedField(many=True)
-    interfaces = InterfacesMSerializer(many=True, read_only=True)
+    # interfaces = InterfacesMSerializer(many=True, read_only=True)
 
     class Meta:
         model = Projects
-        # exclude = ('create_time', 'update_time')
-        fields = ('id', 'name', 'leader', 'tester', 'programmer', 'publish_app', 'desc', 'interfaces')
+        exclude = ('update_time',)
+        # fields = ('id', 'name', 'leader', 'tester', 'programmer', 'publish_app', 'desc', 'interfaces')
         extra_kwargs = {
             'name': {
                 'validators': [is_unique_project_name],
@@ -79,6 +80,9 @@ class ProjectsModelSerializer(serializers.ModelSerializer):
                 'error_messages': {
                     'min_length': '就是一傻逼'
                 }
+            },
+            'create_time': {
+                'read_only': True
             }
         }
 

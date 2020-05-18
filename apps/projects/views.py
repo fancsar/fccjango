@@ -16,7 +16,8 @@ from rest_framework import viewsets
 
 from .models import Projects
 from . import serializers
-
+from . import utils
+from utils.time_famter import get_data
 
 def haha(request):
     return HttpResponse('<h1>Success</h1>')
@@ -39,6 +40,24 @@ class ProjectList(viewsets.ModelViewSet):
     filterset_fields = ['id', 'name', 'leader', 'tester']
     ordering_fields = ['id', 'name']
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            data = utils.get_projects_list_format(serializer.data)
+            return self.get_paginated_response(data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        data = get_data(serializer.data)
+        return Response(data)
+
     # 获取所有的项目名
     @action(detail=False)
     def names(self, request, *args, **kwargs):
@@ -55,7 +74,8 @@ class ProjectList(viewsets.ModelViewSet):
     def interface(self, request, *args, **kwargs):
         pro_ins = self.get_object()
         serializer = self.get_serializer(instance=pro_ins)
-        return Response(serializer.data["interfaces"])
+        data = utils.get_project_interface_format(serializer.data["interfaces"])
+        return Response(data)
 
     # 当遇到多个action用到多个serializer时，指定
     def get_serializer_class(self):
