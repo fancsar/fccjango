@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from .models import Projects
 from interfaces.models import Interfaces
+from debugtalks.models import DebugTalks
 
 
 def is_unique_project_name(value):
@@ -70,7 +71,7 @@ class ProjectsModelSerializer(serializers.ModelSerializer):
         # fields = ('id', 'name', 'leader', 'tester', 'programmer', 'publish_app', 'desc', 'interfaces')
         extra_kwargs = {
             'name': {
-                'validators': [is_unique_project_name],
+                # 'validators': [is_unique_project_name],
                 'error_messages': {
                     'max_length': '不能超过200个字符'
                 }
@@ -99,6 +100,11 @@ class ProjectsModelSerializer(serializers.ModelSerializer):
         if '项目' not in name and 'fancc' not in leader:
             raise serializers.ValidationError(f'{name}中不包含"项目"，并且{leader}中要包含fancc')
         return attrs
+
+    def create(self, validated_data):
+        project = super().create(validated_data)
+        DebugTalks.objects.create(project=project)
+        return project
 
 
 class ProjectsNameModelSerializer(serializers.ModelSerializer):

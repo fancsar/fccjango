@@ -22,5 +22,6 @@ urlpatterns = [
     path('docs/', include_docs_urls(title='测试平台接口文档')),
     path('', include('projects.urls')),
     path('', include('interfaces.urls')),
+    path('', include('envs.urls')),
     path('user/', include('users.urls'))
 ]

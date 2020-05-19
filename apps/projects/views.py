@@ -19,22 +19,13 @@ from . import serializers
 from . import utils
 from utils.time_famter import get_data
 
+
 def haha(request):
     return HttpResponse('<h1>Success</h1>')
 
 
 # 使用类视图
 class ProjectList(viewsets.ModelViewSet):
-    """
-    create: 新增项目
-    list: 查询项目所有信息
-    retrieve: 获取某一个项目信息
-    update: 更改某个项目信息(全部更新)
-    partial_update: 更改某个项目信息(部分更新)
-    destroy: 删除某个项目
-    names: 获取所有的项目名称
-    interface: 获取某个项目的所有接口信息
-    """
     queryset = Projects.objects.all()
     serializer_class = serializers.ProjectsModelSerializer
     filterset_fields = ['id', 'name', 'leader', 'tester']
@@ -50,7 +41,8 @@ class ProjectList(viewsets.ModelViewSet):
             return self.get_paginated_response(data)
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        data = utils.get_projects_list_format(serializer.data)
+        return Response(data)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -62,16 +54,16 @@ class ProjectList(viewsets.ModelViewSet):
     @action(detail=False)
     def names(self, request, *args, **kwargs):
         project = self.get_queryset()
-        page = self.paginate_queryset(project)
-        if page is not None:
-            serializer = self.get_serializer(instance=page, many=True)
-            return self.get_paginated_response(serializer.data)
+        # page = self.paginate_queryset(project)
+        # if page is not None:
+        #     serializer = self.get_serializer(instance=page, many=True)
+        #     return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(instance=project, many=True)
         return Response(serializer.data)
 
     # 获取某个项目名下的所有接口信息
     @action(detail=True)
-    def interface(self, request, *args, **kwargs):
+    def interfaces(self, request, *args, **kwargs):
         pro_ins = self.get_object()
         serializer = self.get_serializer(instance=pro_ins)
         data = utils.get_project_interface_format(serializer.data["interfaces"])
@@ -81,7 +73,7 @@ class ProjectList(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'names':
             return serializers.ProjectsNameModelSerializer
-        elif self.action == 'interface':
+        elif self.action == 'interfaces':
             return serializers.ProjectsInsModelSerializer
         else:
             return self.serializer_class
