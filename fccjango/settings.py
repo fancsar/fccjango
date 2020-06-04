@@ -165,8 +165,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication'
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        # 'rest_framework.permissions.AllowAny',
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
+        # 'rest_framework.permissions.IsAuthenticated',
     ],
 
 }
@@ -224,3 +224,5 @@ LOGGING = {
         },
     }
 }
+
+REPORT_DIR = os.path.join(BASE_DIR, 'report')

@@ -23,5 +23,10 @@ urlpatterns = [
     path('', include('projects.urls')),
     path('', include('interfaces.urls')),
     path('', include('envs.urls')),
+    path('', include('debugtalks.urls')),
+    path('', include('testsuits.urls')),
+    path('', include('reports.urls')),
+    path('', include('configures.urls')),
+    path('', include('testcases.urls')),
     path('user/', include('users.urls'))
 ]

@@ -22,6 +22,7 @@ class EnvsList(viewsets.ModelViewSet):
         response.data = get_data(response.data)
         return response
 
+    # 获取所有环境变量的名称
     @action(detail=False)
     def names(self, request, *args, **kwargs):
         envs = self.filter_queryset(self.get_queryset())
