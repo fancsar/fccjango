@@ -4,6 +4,8 @@
 # @Email  :fanchengcheng3@xdf.cn
 # @File   :serializers.py
 from rest_framework import serializers
+
+from envs.models import Envs
 from .models import Testsuits
 from projects.models import Projects
 from interfaces.models import Interfaces
@@ -16,7 +18,7 @@ class TestsuitsModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Testsuits
-        fields = ('id', 'name', 'project', 'project_id', 'create_time', 'update_time')
+        fields = ('id', 'name', 'project', 'include', 'project_id', 'create_time', 'update_time')
 
         extra_kwargs = {
             'include': {
@@ -49,3 +51,19 @@ class TestsuitsModelSerializer(serializers.ModelSerializer):
             if item not in interface_list:
                 raise serializers.ValidationError(f'该接口id值({item})不是该项目{attrs["project_id"]}id值为({project_id})的接口')
         return attrs
+
+
+class TestsuitsRunSerializer(serializers.ModelSerializer):
+    env_id = serializers.IntegerField(label='环境id', help_text='环境id', write_only=True)
+
+    class Meta:
+        model = Testsuits
+        fields = ('id', 'env_id')
+
+    def validate_env_id(self, value):
+        if not isinstance(value, int):
+            raise serializers.ValidationError('所填参数有误')
+        elif not Envs.objects.filter(id=value).exists():
+            raise serializers.ValidationError('所选环境不存在')
+        # 字段校验完后，必须返回值
+        return value

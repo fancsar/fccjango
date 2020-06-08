@@ -1,12 +1,17 @@
 from django.shortcuts import render
+import os
 import json
+from datetime import datetime
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from utils.time_famter import get_data
 from .models import Testcases
 from interfaces.models import Interfaces
-from .serializers import TestcasesModelSerializer
-from utils import handle_datas
+from envs.models import Envs
+from .serializers import TestcasesModelSerializer, TestcasesRunSerializer
+from utils import handle_datas, common
+from fccjango.settings import SUITES_DIR
 
 
 class TestcasesList(viewsets.ModelViewSet):
@@ -73,7 +78,7 @@ class TestcasesList(viewsets.ModelViewSet):
             "url": testcase_request_datas.get("url"),
             "param": testcase_request_params_list,
             "header": testcase_request_headers_list,
-            "variable": testcase_variables_list,
+            "variable": testcase_form_datas_list,
             "jsonVariable": testcase_request_json,
 
             "extract": testcase_extract_list,
@@ -84,3 +89,24 @@ class TestcasesList(viewsets.ModelViewSet):
             "teardownHooks": testcase_teardown_hooks_list,
         }
         return Response(datas)
+
+    @action(methods=['post'], detail=True)
+    def run(self, request, *args, **kwargs):
+        testcase = self.get_object()
+        serializer = self.get_serializer(instance=testcase, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # 此时的data为校验后的数据
+        datas = serializer.validated_data
+        env_id = datas.get('env_id')
+        # 将文件夹时间戳处理化
+        testcase_dir_path = os.path.join(SUITES_DIR, datetime.strftime(datetime.now(), '%Y-%m-%d %H.%M.%S %f'))
+        os.mkdir(testcase_dir_path)
+        # 获取环境变量对象
+        env_obj = Envs.objects.get(id=env_id)
+        # 生成yaml用例文件
+        common.generate_testcase_files(testcase, env_obj, testcase_dir_path)
+        # 运行用例,返回报告
+        return common.run_testcase(testcase, testcase_dir_path)
+
+    def get_serializer_class(self):
+        return TestcasesRunSerializer if self.action == 'run' else self.serializer_class

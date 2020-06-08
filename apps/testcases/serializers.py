@@ -7,6 +7,7 @@ from rest_framework import serializers
 from .models import Testcases
 from projects.models import Projects
 from interfaces.models import Interfaces
+from envs.models import Envs
 
 
 class InterfacesAnotherSerializer(serializers.ModelSerializer):
@@ -65,3 +66,19 @@ class TestcasesModelSerializer(serializers.ModelSerializer):
         interface = validated_data.pop('interface')
         validated_data['interface_id'] = interface['iid']
         return super().update(instance, validated_data)
+
+
+class TestcasesRunSerializer(serializers.ModelSerializer):
+    env_id = serializers.IntegerField(label='环境id', help_text='环境id', write_only=True)
+
+    class Meta:
+        model = Testcases
+        fields = ('id', 'env_id')
+
+    def validate_env_id(self, value):
+        if not isinstance(value, int):
+            raise serializers.ValidationError('所填参数有误')
+        elif not Envs.objects.filter(id=value).exists():
+            raise serializers.ValidationError('所选环境不存在')
+        # 字段校验完后，必须返回值
+        return value

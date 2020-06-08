@@ -225,4 +225,6 @@ LOGGING = {
     }
 }
 
-REPORT_DIR = os.path.join(BASE_DIR, 'report')
+REPORT_DIR = os.path.join(BASE_DIR, 'reports')
+
+SUITES_DIR = os.path.join(BASE_DIR, 'suites')

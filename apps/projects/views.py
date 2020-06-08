@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import json
+import os
+from datetime import datetime
+
 from django.http import HttpResponse, JsonResponse, Http404
 from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
@@ -14,10 +17,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import viewsets
 
+from envs.models import Envs
+from interfaces.models import Interfaces
+from testcases.models import Testcases
+from fccjango.settings import SUITES_DIR
 from .models import Projects
 from . import serializers
 from . import utils
 from utils.time_famter import get_data
+from utils import common
 
 
 def haha(request):
@@ -69,11 +77,42 @@ class ProjectList(viewsets.ModelViewSet):
         data = utils.get_project_interface_format(serializer.data["interfaces"])
         return Response(data)
 
+    @action(methods=['post'], detail=True)
+    def run(self, request, *args, **kwargs):
+        project = self.get_object()
+        serializer = self.get_serializer(instance=project, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # 此时的data为校验后的数据
+        datas = serializer.validated_data
+        env_id = datas.get('env_id')
+        # 将文件夹时间戳处理化
+        testcase_dir_path = os.path.join(SUITES_DIR, datetime.strftime(datetime.now(), '%Y-%m-%d_%H.%M.%S_%f'))
+        os.mkdir(testcase_dir_path)
+        # 获取环境变量对象
+        env_obj = Envs.objects.get(id=env_id)
+        # 获取项目下所有接口
+        interface_objs = Interfaces.objects.filter(project=project)
+
+        if not interface_objs.exists():
+            data = {
+                'detail': '此项目下无接口，无法运行'
+            }
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+        for interface_obj in interface_objs:
+            testcase_objs = Testcases.objects.filter(interface=interface_obj)
+            for case_obj in testcase_objs:
+                common.generate_testcase_files(case_obj, env_obj, testcase_dir_path)
+        # 运行用例
+        return common.run_testcase(project, testcase_dir_path)
+
     # 当遇到多个action用到多个serializer时，指定
     def get_serializer_class(self):
         if self.action == 'names':
             return serializers.ProjectsNameModelSerializer
         elif self.action == 'interfaces':
             return serializers.ProjectsInsModelSerializer
+        elif self.action == 'run':
+            return serializers.ProjectsRunSerializer
         else:
             return self.serializer_class

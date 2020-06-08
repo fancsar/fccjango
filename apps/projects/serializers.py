@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import Projects
 from interfaces.models import Interfaces
 from debugtalks.models import DebugTalks
+from envs.models import Envs
 
 
 def is_unique_project_name(value):
@@ -121,3 +122,19 @@ class ProjectsInsModelSerializer(serializers.ModelSerializer):
         model = Projects
         # exclude = ('create_time', 'update_time')
         fields = ('interfaces',)
+
+
+class ProjectsRunSerializer(serializers.ModelSerializer):
+    env_id = serializers.IntegerField(label='环境id', help_text='环境id', write_only=True)
+
+    class Meta:
+        model = Projects
+        fields = ('id', 'env_id')
+
+    def validate_env_id(self, value):
+        if not isinstance(value, int):
+            raise serializers.ValidationError('所填参数有误')
+        elif not Envs.objects.filter(id=value).exists():
+            raise serializers.ValidationError('所选环境不存在')
+        # 字段校验完后，必须返回值
+        return value

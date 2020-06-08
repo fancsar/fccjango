@@ -1,4 +1,6 @@
 import json
+import os
+from datetime import datetime
 
 from django.http import HttpResponse, JsonResponse, Http404
 from django.shortcuts import render
@@ -11,6 +13,10 @@ from rest_framework.generics import GenericAPIView
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
+
+from envs.models import Envs
+from fccjango.settings import SUITES_DIR
+from utils import common
 from .models import Interfaces
 from . import serializers
 from . import utils
@@ -94,3 +100,31 @@ class InterfanceList(viewsets.ModelViewSet):
         configures = Configures.objects.filter(interface_id=pk)
         data = [{'id': obj.id, 'name': obj.name} for obj in configures]
         return Response(data)
+
+    @action(methods=['post'], detail=True)
+    def run(self, request, *args, **kwargs):
+        interface = self.get_object()
+        serializer = self.get_serializer(instance=interface, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # 此时的data为校验后的数据
+        datas = serializer.validated_data
+        env_id = datas.get('env_id')
+        # 将文件夹时间戳处理化
+        testcase_dir_path = os.path.join(SUITES_DIR, datetime.strftime(datetime.now(), '%Y-%m-%d_%H.%M.%S_%f'))
+        os.mkdir(testcase_dir_path)
+        # 获取环境变量对象
+        env_obj = Envs.objects.get(id=env_id)
+        # 获取接口下所有用例
+        testcase_objs = Testcases.objects.filter(interface=interface)
+        if not testcase_objs.exists():
+            data = {
+                'detail': '此接口下无用例，无法运行'
+            }
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        for case_obj in testcase_objs:
+            common.generate_testcase_files(case_obj, env_obj, testcase_dir_path)
+        # 运行用例
+        return common.run_testcase(interface, testcase_dir_path)
+
+    def get_serializer_class(self):
+        return serializers.InterfacesRunSerializer if self.action == 'run' else self.serializer_class

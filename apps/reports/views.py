@@ -30,20 +30,11 @@ class ReportsList(mixins.RetrieveModelMixin,
 
     @action(detail=True)
     def download(self, *args, **kwargs):
-        # 1.手动创建报告
-        reports = self.get_object()
-        html = reports.html
-        # 写入report文件中
-        report_path = settings.REPORT_DIR
-        report_full_path = os.path.join(report_path, reports.name) + '.html'
-        with open(report_full_path, 'w', encoding='utf-8') as file:
-            file.write(html)
-        # 2. 读取创建的报告，返回给前端
-        # 如果提供前端用户能够下载，则需要在响应头中修改Content-Type
-        # Content-Disposition:attachment
-        response = StreamingHttpResponse(get_file_content(report_full_path))
+        report = self.get_object()
+        report_html = report.html
+        response = StreamingHttpResponse(iter(report_html))
         # 对文件名进行转义
-        report_final_path = escape_uri_path(reports.name + '.html')
+        report_final_path = escape_uri_path(report.name + '.html')
         response['Content-Type'] = 'application/octet-stream'
         response['Content-Disposition'] = f'attachment;filename={report_final_path}'
         return response
